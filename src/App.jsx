@@ -110,13 +110,17 @@ export class App extends Component {
           <ImageGalleryItem pictures={pictures} modal={this.addModalWindow} />
         </ImageGallery>
 
+        {status === 'idle' && 
+         <h2 className='welcome__message'>Start typing to find pictures...</h2>
+        }
         {status === 'pending' && (
           <Loader />
         )}
-        {!value && 
-         <h2 className='welcome__message'>Start typing to find pictures...</h2>
+        {status === 'resolved' && pictures.length === 0 &&
+          <h2 className='error__message'>No results found for '{value}' request!</h2>
         }
-        {pictures.length > 0 && (
+
+        {status === 'resolved' && pictures.length > 0 && (
           <Button loadMorePictures={this.fetchPics}/>
         )}
       </>
