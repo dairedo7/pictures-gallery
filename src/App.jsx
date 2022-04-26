@@ -32,7 +32,7 @@ export class App extends Component {
     this.setState(prevState => {
       if (prevState !== value) {
         return {
-          page: 1,
+          page: 0,
           value: value,
         };
       }
