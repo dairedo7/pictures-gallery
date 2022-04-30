@@ -6,10 +6,6 @@ export class Searchbar extends Component {
     input: '',
   };
 
-  reset = () => {
-    this.setState({ input: '' });
-  };
-
   handleSubmit = evt => {
     evt.preventDefault();
     const { input } = this.state;
@@ -18,13 +14,11 @@ export class Searchbar extends Component {
       return Notify.warning('Please, enter the proper search request');
     }
     this.props.submit(input);
-    this.reset();
   };
 
   onInputChange = ({ target }) => {
     const { value } = target;
 
-    console.log(value);
     this.setState({ input: value.toLowerCase() });
   };
 

@@ -3,10 +3,9 @@ import './index.css';
 import { Searchbar } from './components/Searchbar/Searchbar.js';
 import { Loader } from 'components/Loader/Loader';
 import { ImageGallery } from 'components/ImageGallery/ImageGallery';
-import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
 import { Button } from 'components/Button/Button';
 import { Modal } from 'components/Modal/Modal';
-import api from './components/Services/API.js';
+import api from './services/API.js';
 
 export class App extends Component {
   state = {
@@ -17,10 +16,14 @@ export class App extends Component {
     status: 'idle',
     showModal: false,
     modalItem: [],
+    showLoadMore: false,
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.value !== this.state.value) {
+  componentDidUpdate(prevProps, { value, page }) {
+    if (page !== this.state.page || value !== this.state.value) {
+      this.fetchPics();
+    }
+    if (value !== this.state.value) {
       this.setState({ pictures: [] });
       this.fetchPics();
     } else {
@@ -45,7 +48,7 @@ export class App extends Component {
       return {
         id: id,
         webformatURL: webformatURL,
-        largeImageURL: largeImageURL,
+        largeImage: largeImageURL,
       };
     });
     this.setState(prevState => {
@@ -55,10 +58,19 @@ export class App extends Component {
       };
     });
   };
-
+  pageIncrement = () => {
+    this.setState(({ page }) => {
+      return {
+        page: page + 1,
+      };
+    });
+  };
   fetchPics = async () => {
     const { value, page } = this.state;
-    this.setState({ status: 'pending' });
+    this.setState({
+      status: 'pending',
+      showLoadMore: true,
+    });
 
     try {
       const pictures = await api.fetchPicturesWithQuery(value, page);
@@ -66,24 +78,20 @@ export class App extends Component {
       this.setState({
         status: 'resolved',
       });
-      this.createArr(pictures);
+      if (pictures.totalHits - 12 * page < 12) {
+        this.setState({ showLoadMore: false });
+      }
+      this.createArr(pictures.hits);
     } catch (error) {
       this.setState({
         error: error,
         status: 'rejected',
-      });
-    } finally {
-      this.setState(({ page }) => {
-        return {
-          page: page + 1,
-        };
       });
     }
   };
 
   addModalWindow = id => {
     const findId = this.state.pictures.find(item => item.id === id);
-
     this.setState({ modalItem: findId });
     this.toggleModal();
   };
@@ -94,7 +102,8 @@ export class App extends Component {
     }));
   };
   render() {
-    const { pictures, status, value, showModal, modalItem } = this.state;
+    const { pictures, status, value, showModal, modalItem, showLoadMore } =
+      this.state;
 
     return (
       <>
@@ -102,10 +111,7 @@ export class App extends Component {
 
         <Searchbar submit={this.updateQuery} />
 
-        <ImageGallery>
-          <ImageGalleryItem pictures={pictures} modal={this.addModalWindow} />
-        </ImageGallery>
-
+        <ImageGallery pictures={pictures} onOpenModal={this.addModalWindow} />
         {status === 'idle' && (
           <h2 className="welcome__message">Start typing to find pictures...</h2>
         )}
@@ -116,8 +122,8 @@ export class App extends Component {
           </h2>
         )}
 
-        {status === 'resolved' && pictures.length > 0 && (
-          <Button loadMorePictures={this.fetchPics} />
+        {status === 'resolved' && pictures.length > 0 && showLoadMore && (
+          <Button loadMorePictures={this.pageIncrement} />
         )}
       </>
     );
