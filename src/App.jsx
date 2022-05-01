@@ -17,14 +17,14 @@ export class App extends Component {
     showModal: false,
     modalItem: [],
     showLoadMore: false,
+    totalHits: 0,
   };
 
   componentDidUpdate(prevProps, { value, page }) {
     if (page !== this.state.page || value !== this.state.value) {
-      this.fetchPics();
-    }
-    if (value !== this.state.value) {
-      this.setState({ pictures: [] });
+      if (this.state.totalHits - 12 <= 0) {
+        this.setState({ showLoadMore: false });
+      }
       this.fetchPics();
     } else {
       return;
@@ -32,10 +32,11 @@ export class App extends Component {
   }
 
   updateQuery = value => {
+    this.setState({ pictures: [] });
     this.setState(prevState => {
       if (prevState !== value) {
         return {
-          page: 0,
+          page: 1,
           value: value,
         };
       }
@@ -74,13 +75,11 @@ export class App extends Component {
 
     try {
       const pictures = await api.fetchPicturesWithQuery(value, page);
-
       this.setState({
         status: 'resolved',
+        totalHits: pictures.totalHits,
       });
-      if (pictures.totalHits - 12 * page < 12) {
-        this.setState({ showLoadMore: false });
-      }
+
       this.createArr(pictures.hits);
     } catch (error) {
       this.setState({
@@ -102,16 +101,23 @@ export class App extends Component {
     }));
   };
   render() {
-    const { pictures, status, value, showModal, modalItem, showLoadMore } =
-      this.state;
-
+    const {
+      pictures,
+      status,
+      value,
+      showModal,
+      modalItem,
+      showLoadMore,
+      totalHits,
+    } = this.state;
+    const { toggleModal, updateQuery, addModalWindow, pageIncrement } = this;
     return (
       <>
-        {showModal && <Modal onOpen={modalItem} onClose={this.toggleModal} />}
+        {showModal && <Modal onOpen={modalItem} onClose={toggleModal} />}
 
-        <Searchbar submit={this.updateQuery} />
+        <Searchbar submit={updateQuery} />
 
-        <ImageGallery pictures={pictures} onOpenModal={this.addModalWindow} />
+        <ImageGallery pictures={pictures} onOpenModal={addModalWindow} />
         {status === 'idle' && (
           <h2 className="welcome__message">Start typing to find pictures...</h2>
         )}
@@ -122,9 +128,9 @@ export class App extends Component {
           </h2>
         )}
 
-        {status === 'resolved' && pictures.length > 0 && showLoadMore && (
-          <Button loadMorePictures={this.pageIncrement} />
-        )}
+        {status === 'resolved' &&
+          pictures.length !== totalHits &&
+          showLoadMore && <Button loadMorePictures={pageIncrement} />}
       </>
     );
   }

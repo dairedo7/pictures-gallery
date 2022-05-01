@@ -5,7 +5,11 @@ import { PropTypes } from 'prop-types';
 export const ImageGalleryItem = ({ webformatURL, id, openModal }) => {
   return (
     <>
-      <li className={styles.ImageGalleryItem} onClick={() => openModal(id)}>
+      <li
+        key={id}
+        className={styles.ImageGalleryItem}
+        onClick={() => openModal(id)}
+      >
         <img
           className={styles.ImageGalleryItem_image}
           src={webformatURL}

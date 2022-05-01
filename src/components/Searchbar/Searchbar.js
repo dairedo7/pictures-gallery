@@ -1,9 +1,14 @@
 import styles from './Searchbar.module.css';
 import { Component } from 'react';
 import { Notify } from 'notiflix';
+import PropTypes from 'prop-types';
 export class Searchbar extends Component {
   state = {
     input: '',
+  };
+
+  static propTypes = {
+    submit: PropTypes.func.isRequired,
   };
 
   handleSubmit = evt => {

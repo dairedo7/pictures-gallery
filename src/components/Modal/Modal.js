@@ -9,7 +9,10 @@ const modalRoot = document.querySelector('#modal__root');
 export class Modal extends Component {
   static propTypes = {
     onClose: PropTypes.func.isRequired,
-    onOpen: PropTypes.object.isRequired,
+    onOpen: PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      largeImage: PropTypes.string.isRequired,
+    }),
   };
   componentDidMount() {
     window.addEventListener('keydown', this.handleKeyDown);
