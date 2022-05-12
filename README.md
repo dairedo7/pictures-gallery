@@ -1,4 +1,4 @@
-This project was created for learing purposes only.
+This project was created for learning purposes only.
 
 The projects contains the gallery, which includes search-by-word technique, where life-cycle method componentDidUpdate checks, whether or not the page or the input value was updated and fetches pictures from pixabay RESTful API.
 Fetching of the html requests are held using axios library.
